@@ -52,7 +52,7 @@ namespace JamPaul97.Tools.WebCache
 			_cacheFolder = Folder;
 			if (!_cacheFolder.EndsWith("\\"))
 				_cacheFolder += "\\";
-			this.asyncWBs = new List<asyncData>();
+			this.asyncWBs = new List<AsyncModel>();
 		}
 
 		#region Properties
@@ -269,7 +269,7 @@ namespace JamPaul97.Tools.WebCache
 
 		#region Async
 
-		private List<asyncData> asyncWBs = new List<asyncData>();
+		private List<AsyncModel> asyncWBs = new List<AsyncModel>();
 
 		public string TryCacheStringAsync(string url, out string data, long minutes = 10, bool force = false)
 		{
@@ -287,7 +287,7 @@ namespace JamPaul97.Tools.WebCache
 			var uuid = Guid.NewGuid().ToString();
 			wb.DownloadStringCompleted += Wb_DownloadStringCompleted;
 			wb.DownloadProgressChanged += Wb_DownloadProgressChanged;
-			var _d = new asyncData()
+			var _d = new AsyncModel()
 			{
 				wb = wb,
 				minutes = minutes,
@@ -302,15 +302,7 @@ namespace JamPaul97.Tools.WebCache
 			return uuid;
 		}
 
-		private class asyncData
-		{
-			public WebClient wb;
-			public long minutes;
-			public bool force;
-			public string url;
-			public string uuid;
-			public string filename;
-		}
+		
 
 
 		private void Wb_DownloadProgressChanged(object sender, DownloadProgressChangedEventArgs e)
@@ -377,7 +369,7 @@ namespace JamPaul97.Tools.WebCache
 			var uuid = Guid.NewGuid().ToString();
 			wb.DownloadDataCompleted += Wb_DownloadDataCompleted;
 			wb.DownloadProgressChanged += Wb_DownloadProgressChanged;
-			var _d = new asyncData()
+			var _d = new AsyncModel()
 			{
 				wb = wb,
 				minutes = minutes,

@@ -24,6 +24,7 @@ namespace JamPaul97.Tools.WebCache
 		public CacheData(long mtl = 10)
 		{
 			this.MTL = mtl;
+			this.CreatedAt = DateTime.Now;
 		}
 	}
 	[Serializable]

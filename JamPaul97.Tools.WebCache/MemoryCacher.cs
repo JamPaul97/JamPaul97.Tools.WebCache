@@ -52,8 +52,10 @@ namespace JamPaul97.Tools.WebCache
 			return false;
 		}
 
-		/// <inheritdoc />
-		public bool TryCacheBytes(string url, Func<string, object, byte[]> caller, out byte[] data, long minutes = 10, object payload = null, bool force = false)
+        #region Sync
+
+        /// <inheritdoc />
+        public bool TryCacheBytes(string url, Func<string, object, byte[]> caller, out byte[] data, long minutes = 10, object payload = null, bool force = false)
 		{
 			if (this._byteCache.ContainsKey(url) && !force)
 			{
@@ -117,6 +119,18 @@ namespace JamPaul97.Tools.WebCache
 		public bool TryCacheBytes(string url, out byte[] data, long minutes = 10, bool force = false) =>
 			TryCacheBytes(url, this.custmomByteWebClient, out data, minutes, force);
 
+		private string custmomStringWebClient(string url, object trash)
+		{
+			var wb = new WebClient();
+			return wb.DownloadString(url);
+		}
+		
+		private byte[] custmomByteWebClient(string url, object trash)
+		{
+			var wb = new WebClient();
+			return wb.DownloadData(url);
+		}
+		#endregion
 
 		/// <summary>
 		/// Saves the current Memory caches to a file, you can load the backup file later to a new MemoryCache
@@ -136,22 +150,135 @@ namespace JamPaul97.Tools.WebCache
 				return fs.Length;
 			}
 		}
-		
 
-		private string custmomStringWebClient(string url, object trash)
+		#region Async
+
+		public delegate void DownloadProgressEvent(string uuid, DownloadProgressChangedEventArgs args);
+		public delegate void DownloadStringCompleted(string uuid, DownloadStringCompletedEventArgs e);
+		public delegate void DownloadBytesCompleted(string uuid, DownloadDataCompletedEventArgs e);
+		public event DownloadProgressEvent OnDownloadStringProgress;
+		public event DownloadStringCompleted OnDownloadStringCompleted;
+		public event DownloadBytesCompleted OnDownloadBytesCompleted;
+
+		private List<AsyncModel> asyncWBs = new List<AsyncModel>();
+
+		public string TryCacheStringAsync(string url, out string data, long minutes, bool force)
 		{
+			if (this._stringCache.ContainsKey(url) && !force)
+			{
+				var cache = this._stringCache[url];
+				if (!cache.IsExpired)
+				{
+					data = cache.data;
+					return string.Empty;
+				}
+			}
 			var wb = new WebClient();
-			return wb.DownloadString(url);
+			var uuid = Guid.NewGuid().ToString();
+            wb.DownloadStringCompleted += Wb_DownloadStringCompleted;
+			wb.DownloadProgressChanged += Wb_DownloadProgressChanged;
+			var _d = new AsyncModel()
+			{
+				wb = wb,
+				minutes = minutes,
+				force = force,
+				url = url,
+				uuid = uuid
+			};
+			asyncWBs.Add(_d);
+			wb.DownloadStringAsync(new Uri(url));
+			data = string.Empty;
+			return uuid;
 		}
-		private byte[] custmomByteWebClient(string url, object trash)
+
+        private void Wb_DownloadProgressChanged(object sender, DownloadProgressChangedEventArgs e)
+        {
+			if (this.OnDownloadStringProgress == null)
+				return;
+			var wb = sender as WebClient;
+			if (asyncWBs.Any(x => x.wb == wb))
+			{
+				var uuid = asyncWBs.First(x => x.wb == wb).uuid;
+				this.OnDownloadStringProgress(uuid, e);
+			}
+		}
+
+        private void Wb_DownloadStringCompleted(object sender, DownloadStringCompletedEventArgs e)
+        {
+			var wb = sender as WebClient;
+			if (asyncWBs.Any(x => x.wb == wb))
+			{
+				var asyncObj = asyncWBs.First(x => x.wb == wb);
+				//Cache file
+				if (!e.Cancelled)
+				{
+					var cache = new StringCacheData(e.Result, asyncObj.minutes);
+					if (this._stringCache.ContainsKey(asyncObj.url))
+						this._stringCache.Remove(asyncObj.url);
+					this._stringCache.Add(asyncObj.url, cache);
+				}
+				if (this.OnDownloadStringCompleted != null)
+					this.OnDownloadStringCompleted(asyncObj.uuid, e);
+				asyncWBs.RemoveAll(x => x.wb == wb);
+			}
+		}
+
+        public string TryCacheBytesAsync(string url, out byte[] data, long minutes, bool force)
 		{
+			if (this._stringCache.ContainsKey(url) && !force)
+			{
+				var cache = this._byteCache[url];
+				if (!cache.IsExpired)
+				{
+					data = cache.data;
+					return string.Empty;
+				}
+			}
 			var wb = new WebClient();
-			return wb.DownloadData(url);
+			var uuid = Guid.NewGuid().ToString();
+            wb.DownloadDataCompleted += Wb_DownloadDataCompleted;
+			wb.DownloadProgressChanged += Wb_DownloadProgressChanged;
+			var _d = new AsyncModel()
+			{
+				wb = wb,
+				minutes = minutes,
+				force = force,
+				url = url,
+				uuid = uuid
+			};
+			asyncWBs.Add(_d);
+			wb.DownloadStringAsync(new Uri(url));
+			data = null;
+			return uuid;
 		}
 
-		
+        private void Wb_DownloadDataCompleted(object sender, DownloadDataCompletedEventArgs e)
+        {
+			var wb = sender as WebClient;
+			if (asyncWBs.Any(x => x.wb == wb))
+			{
+				var asyncObj = asyncWBs.First(x => x.wb == wb);
+				//Cache file
+				if (!e.Cancelled)
+				{
+					var cache = new ByteCacheData(e.Result, asyncObj.minutes);
+					if (this._byteCache.ContainsKey(asyncObj.url))
+						this._byteCache.Remove(asyncObj.url);
+					this._byteCache.Add(asyncObj.url, cache);
+				}
+				if (this.OnDownloadBytesCompleted != null)
+					this.OnDownloadBytesCompleted(asyncObj.uuid, e);
+				asyncWBs.RemoveAll(x => x.wb == wb);
+			}
+		}
 
-		[Serializable]
+
+        #endregion
+
+
+
+
+        [Serializable]
 		private class backupClass
 		{
 			public Dictionary<string, StringCacheData> Strings;

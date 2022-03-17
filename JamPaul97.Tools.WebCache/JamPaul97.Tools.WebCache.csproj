@@ -41,9 +41,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AsyncModel.cs" />
     <Compile Include="ICache.cs" />
     <Compile Include="CacheData.cs" />
-    <Compile Include="Class1.cs" />
     <Compile Include="FileCache.cs" />
     <Compile Include="MemoryCacher.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

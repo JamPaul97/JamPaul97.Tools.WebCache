@@ -10,7 +10,6 @@ namespace Tests
 	{
 		static void Main(string[] args)
 		{
-			var c = new JamPaul97.Tools.WebCache.FileCache("");
 			var name = Console.ReadLine();
 		}
 	}
