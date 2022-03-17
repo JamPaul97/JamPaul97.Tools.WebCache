@@ -54,7 +54,7 @@ if (cacher.TryCacheBytes("https://http.cat/401", out byte[] data))
 # Custom HTTP Caller
 Let's say you have your own custom function that make a POST request to url with some JSON payload like : 
 ```c#
-public string MakeHTTPRequest(string url, object payload)
+public static string MakeHTTPRequest(string url, object payload)
 {
   var _payload = payload as PayloadObject;
   var httpWebRequest = (HttpWebRequest)WebRequest.Create(url);
@@ -81,3 +81,50 @@ class PayloadObject
   public string password { get; set; }
 }
  ```
+ 
+ So we can make the Cache as : 
+ ```c#
+ 
+ var cacher = new MemoryCache("directory_to_Save_files");
+var Payload = new PayloadObject()
+{
+	username = "MyUsername",
+	password = "MyPassword"
+};
+if (cacher.TryCacheString("https://ip-fast.com/api/ip/", MakeHTTPRequest, out string data, 10, Payload))
+{
+	//data contains the result
+}
+```
+
+# Async String
+
+```c#
+var cacher = new MemoryCache("directory_to_Save_files");
+string uuid = cacher.TryCacheStringAsync("YOUR_URL", out string data);
+if (data != string.Empty) {
+  //data contains the cached result
+  //uuid is string.Empty
+  handleData(data);
+} else {
+  cacher.OnDownloadStringCompleted += Cacher_OnDownloadStringCompleted;
+  cacher.OnDownloadStringProgress += Cacher_OnDownloadStringProgress;
+}
+
+private static void Cacher_OnDownloadStringProgress(string uuid, DownloadProgressChangedEventArgs args) {
+  //handle download progress
+}
+
+private static void Cacher_OnDownloadStringCompleted(string uuid, DownloadStringCompletedEventArgs e) {
+  //handle download clompleted
+  handleData(e.Data);
+}
+
+private void handleData(string data){
+  //handle your data
+}
+```
+
+As you can see when trying to async cache, the function is returning a string UUID. You have to store this UUID because when the ```OnDownloadStringProgress``` event fires it will contain the UUID of the completed request, this way you can have multiple caches running at the same time, and distinguish between them using that UUID.
+ 
+ 
