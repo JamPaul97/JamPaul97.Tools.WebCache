@@ -50,5 +50,23 @@ namespace JamPaul97.Tools.WebCache
 		/// <param name="force">If set true and a cache is stored localy, it ignoned the cache</param>
 		/// <returns>True if the request/cache read was succefull</returns>
 		bool TryCacheBytes(string url, out byte[] data, long minutes = 10, bool force = false);
+		/// <summary>
+		/// Try to Cache a URL as a string, for 'X' ammount of minutes, using System.Net.WebClient
+		/// </summary>
+		/// <param name="url">URL to Cache</param>
+		/// <param name="data">Out object to assign the result to</param>
+		/// <param name="minutes">Minutes for cache to live</param>
+		/// <param name="force">If set true and a cache is stored localy, it ignoned the cache</param>
+		/// <returns>True if the request/cache read was succefull</returns>
+		string TryCacheStringAsync(string url, out string data, long minutes = 10, bool force = false);
+		/// <summary>
+		/// Try to Cache a URL as a byte array, for 'X' ammount of minutes, using System.Net.WebClient
+		/// </summary>
+		/// <param name="url">URL to Cache</param>
+		/// <param name="data">Out object to assign the result to</param>
+		/// <param name="minutes">Minutes for cache to live</param>
+		/// <param name="force">If set true and a cache is stored localy, it ignoned the cache</param>
+		/// <returns>True if the request/cache read was succefull</returns>
+		string TryCacheBytesAsync(string url, out byte[] data, long minutes = 10, bool force = false);
 	}
 }

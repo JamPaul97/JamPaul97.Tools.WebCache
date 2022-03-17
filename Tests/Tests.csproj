@@ -49,11 +49,5 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\JamPaul97.Tools.WebCache\JamPaul97.Tools.WebCache.csproj">
-      <Project>{efae3324-ff23-48ac-afd4-0540f8d78946}</Project>
-      <Name>JamPaul97.Tools.WebCache</Name>
-    </ProjectReference>
-  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
