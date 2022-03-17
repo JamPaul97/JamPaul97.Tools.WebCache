@@ -113,23 +113,14 @@ namespace JamPaul97.Tools.WebCache
 		}
 
 		/// <inheritdoc />
-		public bool TryCacheString(string url, out string data, long minutes = 10, bool force = false) =>
-			TryCacheString(url, this.custmomStringWebClient, out data, minutes, force);
+		public bool TryCacheString(string url, out string data, long minutes = 10, bool force = false)=>
+			TryCacheString(url, Tools.custmomStringWebClient, out data, minutes,null, force);
+			
 		/// <inheritdoc />
 		public bool TryCacheBytes(string url, out byte[] data, long minutes = 10, bool force = false) =>
-			TryCacheBytes(url, this.custmomByteWebClient, out data, minutes, force);
+			TryCacheBytes(url, Tools.custmomByteWebClient, out data, minutes,null, force);
 
-		private string custmomStringWebClient(string url, object trash)
-		{
-			var wb = new WebClient();
-			return wb.DownloadString(url);
-		}
 		
-		private byte[] custmomByteWebClient(string url, object trash)
-		{
-			var wb = new WebClient();
-			return wb.DownloadData(url);
-		}
 		#endregion
 
 		/// <summary>
@@ -162,7 +153,7 @@ namespace JamPaul97.Tools.WebCache
 
 		private List<AsyncModel> asyncWBs = new List<AsyncModel>();
 
-		public string TryCacheStringAsync(string url, out string data, long minutes, bool force)
+		public string TryCacheStringAsync(string url, out string data, long minutes=10, bool force=false)
 		{
 			if (this._stringCache.ContainsKey(url) && !force)
 			{
@@ -223,7 +214,7 @@ namespace JamPaul97.Tools.WebCache
 			}
 		}
 
-        public string TryCacheBytesAsync(string url, out byte[] data, long minutes, bool force)
+        public string TryCacheBytesAsync(string url, out byte[] data, long minutes = 10, bool force = false)
 		{
 			if (this._stringCache.ContainsKey(url) && !force)
 			{

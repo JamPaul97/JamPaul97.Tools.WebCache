@@ -216,7 +216,7 @@ namespace JamPaul97.Tools.WebCache
 
 		/// <inheritdoc />
 		public bool TryCacheBytes(string url, out byte[] data, long minutes = 10, bool force = false) =>
-		TryCacheBytes(url, this.custmomByteWebClient, out data, minutes, force);
+		TryCacheBytes(url, Tools.custmomByteWebClient, out data, minutes,null, force);
 
 		/// <summary>
 		/// Try to Cache a URL as a byte array, until this function is called again with the 'force' parameter as true
@@ -225,8 +225,8 @@ namespace JamPaul97.Tools.WebCache
 		/// <param name="data">Out object to assign the result to</param>
 		/// <param name="force">If set true and a cache is stored localy, it ignoned the cache</param>
 		/// <returns>True if the request/cache read was succefull</returns>
-		public bool TryDeepCacheByte(string url, out byte[] data, long minutes = 10, bool force = false) =>
-			TryDeepCacheBytes(url, this.custmomByteWebClient, out data, minutes, force);
+		public bool TryDeepCacheByte(string url, out byte[] data, bool force = false) =>
+			TryDeepCacheBytes(url, Tools.custmomByteWebClient, out data, null,force);
 
 		/// <summary>
 		/// Try to Cache a URL as a string, until this function is called again with the 'force' parameter as true
@@ -235,8 +235,8 @@ namespace JamPaul97.Tools.WebCache
 		/// <param name="data">Out object to assign the result to</param>
 		/// <param name="force">If set true and a cache is stored localy, it ignoned the cache</param>
 		/// <returns>True if the request/cache read was succefull</returns>
-		public bool TryDeepCacheString(string url, out string data, long minutes = 10, bool force = false) =>
-			TryDeepCacheString(url, this.custmomStringWebClient, out data, minutes, force);
+		public bool TryDeepCacheString(string url, out string data, bool force = false) =>
+			TryDeepCacheString(url, Tools.custmomStringWebClient, out data, null, force);
 
 		#endregion
 
@@ -252,18 +252,6 @@ namespace JamPaul97.Tools.WebCache
 		{
 			using (var fs = new FileStream(filename, FileMode.OpenOrCreate))
 				new BinaryFormatter().Serialize(fs, data);
-		}
-
-		private string custmomStringWebClient(string url, object trash)
-		{
-			var wb = new WebClient();
-			return wb.DownloadString(url);
-		}
-
-		private byte[] custmomByteWebClient(string url, object trash)
-		{
-			var wb = new WebClient();
-			return wb.DownloadData(url);
 		}
 		#endregion
 

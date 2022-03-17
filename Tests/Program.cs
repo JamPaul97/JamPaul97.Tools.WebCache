@@ -1,6 +1,7 @@
 ﻿using JamPaul97.Tools.WebCache;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -15,37 +16,43 @@ namespace Tests
     {
         static void Main(string[] args)
         {
-            var cacher = new MemoryCache("directory_to_Save_files");
-            if (cacher.TryCacheBytes("https://ip-fast.com/api/ip/", out byte[] data))
-            {
-                Image img = Image.FromStream(new MemoryStream(data));
-            }
+            var cacher = new MemoryCache();
+            Stopwatch sw = new Stopwatch();
+            sw.Start();
+            var uuid = cacher.TryCacheString("https://github.com/json-iterator/test-data/blob/master/large-file.json?raw=true", get, out string data,10);
+            sw.Stop();
+            Console.WriteLine($"Custom Caller took  : {(float)(sw.ElapsedMilliseconds/1000.0)}s");
+            sw.Restart();
+            uuid = cacher.TryCacheString("https://github.com/json-iterator/test-data/blob/master/large-file.json?raw=true",get, out string data2);
+            sw.Stop();
+            Console.WriteLine($"Custom Caller cache took : {(float)(sw.ElapsedMilliseconds / 1000.0)}s");
 
+            sw.Restart();
+            uuid = cacher.TryCacheString("https://github.com/json-iterator/test-data/blob/master/large-file.json?raw=true",out string data3,10,true);
+            sw.Stop();
+            Console.WriteLine($"Default Called took : {(float)(sw.ElapsedMilliseconds / 1000.0)}s");
+            sw.Restart();
+            uuid = cacher.TryCacheString("https://github.com/json-iterator/test-data/blob/master/large-file.json?raw=true", out string data4, 10);
+            sw.Stop();
+            Console.WriteLine($"Default Called cache took : {(float)(sw.ElapsedMilliseconds / 1000.0)}s");
 
-
+            var a = Console.ReadLine();
         }
-        class PayloadObject
-        {
-            public string username { get; set; }
-            public string password { get; set; }
-        }
-        public string MakeHTTPRequest(string url, object payload)
-        {
-            var _payload = payload as PayloadObject;
-            var httpWebRequest = (HttpWebRequest)WebRequest.Create(url);
-            httpWebRequest.ContentType = "application/json";
-            httpWebRequest.Method = "POST";
+        public static string get(string url,object payload = null)
+		{
+            string html = string.Empty;
 
-            using (var streamWriter = new StreamWriter(httpWebRequest.GetRequestStream()))
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
+            request.AutomaticDecompression = DecompressionMethods.None;
+
+            using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
+            using (Stream stream = response.GetResponseStream())
+            using (StreamReader reader = new StreamReader(stream))
             {
-                string json = Newtonsoft.Json.JsonConvert.SerializeObject(_payload);
-                streamWriter.Write(json);
+                html = reader.ReadToEnd();
             }
-            var httpResponse = (HttpWebResponse)httpWebRequest.GetResponse();
-            using (var streamReader = new StreamReader(httpResponse.GetResponseStream()))
-            {
-                return streamReader.ReadToEnd();
-            }
+
+            return html;
         }
     }
 }
